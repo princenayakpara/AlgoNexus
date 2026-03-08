@@ -14,9 +14,6 @@ dotenv.config();
 const app = express();
 
 const allowedOrigins = [
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "https://algonexus.vercel.app",
   "https://algo-nexus-omega.vercel.app",
   process.env.FRONTEND_URL, // Allow custom frontend URL via env var
 ].filter(Boolean);
@@ -45,14 +42,7 @@ app.use("/", backtestRoutes); // Backtest routes will handle their own protectio
 app.use("/", protect, strategyRoutes);
 app.use("/", healthRoutes);
 
-// Serve frontend in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "..", "frontend", "dist")));
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "frontend", "dist", "index.html"));
-  });
-}
-
+// Frontend is hosted separately on Vercel, so we don't serve static files here.
 // Error handler (always active)
 app.use(notFound);
 app.use(errorHandler);
