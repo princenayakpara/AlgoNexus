@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: algonexus-api
+    runtime: python
+    buildCommand: |
+      pip install -r requirements.txt
+      npm install
+    startCommand: node backend/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: PYTHON_SCRIPT
+        value: engine/backtest.py
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://algonexus.vercel.app

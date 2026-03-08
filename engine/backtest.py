@@ -141,8 +141,12 @@ def main():
   else:
     data = pd.read_csv(file_path)
 
+  # Standardize all column names to lowercase
+  if not data.empty:
+      data.columns = [str(col).lower().strip() for col in data.columns]
+
   if "date" in data.columns:
-    data["date"] = pd.to_datetime(data["date"])
+    data["date"] = pd.to_datetime(data["date"], errors="coerce")
 
   strategy = load_strategy_config() or {}
   config = strategy.get("config") or {}
@@ -157,16 +161,30 @@ def main():
 
   equity = backtest_df["equity"].tolist()
 
-  final_value = round(equity[-1], 2)
-  total_return = round((final_value - initial_capital) / initial_capital * 100, 2)
+  if not equity:
+      final_value = initial_capital
+      total_return = 0.0
+      sharpe_ratio = 0.0
+      max_drawdown = 0.0
+      backtest_df = pd.DataFrame({"equity": [initial_capital]})
+  else:
+      final_value = round(equity[-1], 2)
+      total_return = round((final_value - initial_capital) / initial_capital * 100, 2)
 
-  returns = pd.Series(equity).pct_change().dropna()
-  sharpe_ratio = round(float(returns.mean() / returns.std()) if returns.std() != 0 else 0, 4)
+      returns = pd.Series(equity).pct_change().dropna()
+      std_dev = returns.std()
 
-  equity_series = pd.Series(equity)
-  cumulative_max = equity_series.cummax()
-  drawdown = (equity_series - cumulative_max) / cumulative_max * 100
-  max_drawdown = round(float(drawdown.min()), 2)
+      if pd.isna(std_dev) or std_dev == 0:
+          sharpe_ratio = 0.0
+      else:
+          sr = returns.mean() / std_dev
+          sharpe_ratio = round(float(sr), 4) if not pd.isna(sr) else 0.0
+
+      equity_series = pd.Series(equity)
+      cumulative_max = equity_series.cummax()
+      drawdown = (equity_series - cumulative_max) / cumulative_max * 100
+      md = drawdown.min()
+      max_drawdown = round(float(md), 2) if not pd.isna(md) else 0.0
 
   result_csv_path = os.path.join(RESULTS_DIR, "result.csv")
   backtest_df.to_csv(result_csv_path, index=False)
