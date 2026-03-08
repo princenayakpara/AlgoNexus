@@ -93,7 +93,7 @@ const Metrics = ({ metrics }) => {
         
         {hasMetrics && (
           <a
-            href="http://127.0.0.1:5000/results/report.pdf"
+            href={`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000'}/results/report.pdf`}
             target="_blank"
             rel="noopener noreferrer"
             className="group relative inline-flex flex-shrink-0 items-center gap-2 rounded-lg bg-slate-800/50 px-4 py-2 hover:bg-slate-700/50"
