@@ -1,0 +1,48 @@
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const path = require("path");
+const dotenv = require("dotenv");
+const uploadRoutes = require("./routes/uploadRoutes");
+const backtestRoutes = require("./routes/backtestRoutes");
+const strategyRoutes = require("./routes/strategyRoutes");
+const healthRoutes = require("./routes/healthRoutes");
+const { notFound, errorHandler } = require("./middleware/errorHandler");
+
+dotenv.config();
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+app.use(morgan("combined"));
+
+const authRoutes = require("./routes/authRoutes");
+const { protect } = require("./middleware/authMiddleware");
+
+// Core API routes
+app.use("/api/auth", authRoutes);
+app.use("/upload", protect, uploadRoutes);
+app.use("/", backtestRoutes); // Backtest routes will handle their own protection
+app.use("/", protect, strategyRoutes);
+app.use("/", healthRoutes);
+
+// Serve frontend in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "..", "frontend", "dist")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "frontend", "dist", "index.html"));
+  });
+} else {
+  // Not found / error handler
+  app.use(notFound);
+  app.use(errorHandler);
+}
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
+  console.log(`AlgoNexus API listening on port ${PORT}`);
+});
+

@@ -1,0 +1,19 @@
+{
+  "id": 1,
+  "name": "SMA Crossover",
+  "rule": "BUY when SMA5 crosses above SMA15, SELL when SMA5 crosses below SMA15",
+  "config": {
+    "type": "CROSSOVER",
+    "indicator1": {
+      "type": "SMA",
+      "period": 5,
+      "source": "close"
+    },
+    "indicator2": {
+      "type": "SMA",
+      "period": 15,
+      "source": "close"
+    },
+    "direction": "above"
+  }
+}
