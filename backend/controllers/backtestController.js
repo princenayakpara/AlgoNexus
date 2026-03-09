@@ -43,14 +43,19 @@ const getReportPdf = (req, res) => {
 
 const runBacktest = async (req, res) => {
   const { filename } = req.body;
-  const { metrics, stdout } = await runPythonBacktest(filename);
-  runReportGeneration();
+  try {
+    const { metrics, stdout } = await runPythonBacktest(filename);
+    await runReportGeneration();
 
-  res.json({
-    message: "Backtest completed successfully",
-    metrics,
-    output: stdout
-  });
+    res.json({
+      message: "Backtest completed successfully",
+      metrics,
+      output: stdout
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error("Failed to run backtest or generate report");
+  }
 };
 
 module.exports = {

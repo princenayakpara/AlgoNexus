@@ -61,15 +61,18 @@ const runPythonBacktest = (filename) =>
     });
   });
 
-const runReportGeneration = () => {
-  const reportScript = path.join(PROJECT_ROOT, "engine", "generate_report.py");
-  exec(`python "${reportScript}"`, { cwd: PROJECT_ROOT }, (reportError) => {
-    if (reportError) {
-      // eslint-disable-next-line no-console
-      console.error("Report generation failed:", reportError.message);
-    }
+const runReportGeneration = () =>
+  new Promise((resolve, reject) => {
+    const reportScript = path.join(PROJECT_ROOT, "engine", "generate_report.py");
+    exec(`python "${reportScript}"`, { cwd: PROJECT_ROOT }, (reportError) => {
+      if (reportError) {
+        // eslint-disable-next-line no-console
+        console.error("Report generation failed:", reportError.message);
+        return reject(reportError);
+      }
+      resolve();
+    });
   });
-};
 
 module.exports = {
   runPythonBacktest,
